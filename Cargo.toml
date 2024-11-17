@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "lexer",
+]
+resolver = "2"
+
