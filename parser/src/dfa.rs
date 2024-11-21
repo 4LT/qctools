@@ -2,13 +2,13 @@ use std::ops::RangeInclusive;
 
 pub const START: usize = 0;
 
-pub struct Automata<Sym: Copy + Ord> {
+pub struct Automaton<Sym: Copy + Ord> {
     states: Vec<State<Sym>>,
     current_state: Option<usize>,
     previous_accepting: bool,
 }
 
-impl<Sym: Copy + Ord> Automata<Sym> {
+impl<Sym: Copy + Ord> Automaton<Sym> {
     pub fn transition(&mut self, symbol: Option<Sym>) {
         self.previous_accepting = self
             .current_state
@@ -62,11 +62,11 @@ impl<Sym: Copy + Ord> State<Sym> {
     }
 }
 
-pub struct AutomataBuilder<Sym: Copy + Ord> {
+pub struct AutomatonBuilder<Sym: Copy + Ord> {
     states: Vec<State<Sym>>,
 }
 
-impl<Sym: Copy + Ord> AutomataBuilder<Sym> {
+impl<Sym: Copy + Ord> AutomatonBuilder<Sym> {
     pub fn new() -> Self {
         Self {
             states: vec![State::new(false)],
@@ -96,8 +96,8 @@ impl<Sym: Copy + Ord> AutomataBuilder<Sym> {
         self.states[from].transitions.push((symbols, to));
     }
 
-    pub fn build(self) -> Automata<Sym> {
-        Automata {
+    pub fn build(self) -> Automaton<Sym> {
+        Automaton {
             states: self.states,
             current_state: Some(START),
             previous_accepting: false,
@@ -105,12 +105,12 @@ impl<Sym: Copy + Ord> AutomataBuilder<Sym> {
     }
 }
 
-pub fn keyword_automata<Sym: Copy + Ord>(
+pub fn keyword_automaton<Sym: Copy + Ord>(
     keyword: impl IntoIterator<Item = Sym>,
-) -> Automata<Sym> {
+) -> Automaton<Sym> {
     let mut keyword = keyword.into_iter().peekable();
 
-    let mut builder = AutomataBuilder::new();
+    let mut builder = AutomatonBuilder::new();
 
     while let Some(new_sym) = keyword.next() {
         let new_state_idx = builder.add_state(keyword.peek().is_none());
@@ -130,54 +130,54 @@ mod testing {
 
     #[test]
     fn test_keyword() {
-        let mut automata = keyword_automata("hello".chars());
-        
-        assert!(automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        let mut automaton = keyword_automaton("hello".chars());
 
-        automata.transition(Some('h'));
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(automata.is_alive()); 
-        assert!(!automata.is_previous_accepting());
+        automaton.transition(Some('h'));
 
-        automata.transition(Some('e'));
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        automaton.transition(Some('e'));
 
-        automata.transition(Some('l'));
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        automaton.transition(Some('l'));
 
-        automata.transition(Some('l'));
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        automaton.transition(Some('l'));
 
-        automata.transition(Some('o'));
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        automaton.transition(Some('o'));
 
-        automata.transition(None);
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(!automata.is_alive());
-        assert!(automata.is_previous_accepting());
+        automaton.transition(None);
 
-        automata.reset();
+        assert!(!automaton.is_alive());
+        assert!(automaton.is_previous_accepting());
 
-        assert!(automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        automaton.reset();
 
-        automata.transition(Some('h'));
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        automaton.transition(Some('h'));
 
-        automata.transition(Some('h'));
+        assert!(automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
 
-        assert!(!automata.is_alive());
-        assert!(!automata.is_previous_accepting());
+        automaton.transition(Some('h'));
+
+        assert!(!automaton.is_alive());
+        assert!(!automaton.is_previous_accepting());
     }
 }
